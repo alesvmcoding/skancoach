@@ -45,6 +45,7 @@ MANUAL_OVERRIDES = {
     "z6kueqPT1NQ": HuntTitle("Solo", 1, False),
     "L7S_Nd5VGy0": HuntTitle("Team Hunt (PT)", 4, False),
     "CiROJQrLssQ": HuntTitle("Team Hunt (PT)", 4, False),
+    "xXQTFEhbyEg": HuntTitle("Team Hunt (PT)", 4, False),
 }
 
 

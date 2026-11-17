@@ -20,6 +20,7 @@ from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 from .database import DATABASE_ERRORS, connect_database, initialize_postgres_catalog, seed_postgres_community_data
+from .import_youtube_playlist import MANUAL_OVERRIDES
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -107,6 +108,21 @@ def ensure_feedback_table():
         connection.execute("""INSERT OR IGNORE INTO managed_sources(source_type,source_key,name,vocation,source_url)
             SELECT CASE WHEN vocation='CHANNEL' THEN 'channel' ELSE 'playlist' END,
             playlist_id,name,vocation,playlist_url FROM playlists""")
+
+
+def apply_manual_classification_overrides():
+    """Apply confirmed exceptions to existing rows, including already-seeded Neon data."""
+    with connect_database(DATABASE_PATH) as connection:
+        for video_id, classification in MANUAL_OVERRIDES.items():
+            connection.execute("""UPDATE videos SET
+                hunt_type=?, players_count=?, needs_review=?, review_reason=?
+                WHERE video_id=?""", (
+                    classification.hunt_type,
+                    classification.players_count,
+                    int(classification.needs_review),
+                    classification.review_reason or "",
+                    video_id,
+                ))
 
 
 def refresh_static_catalog():
@@ -632,6 +648,7 @@ if __name__ == "__main__":
         raise SystemExit(f"Banco não encontrado: {DATABASE_PATH}")
     if os.environ.get("DATABASE_URL"):
         initialize_postgres_catalog(DATABASE_PATH)
+    apply_manual_classification_overrides()
     refresh_static_catalog()
     ensure_feedback_table()
     if os.environ.get("DATABASE_URL"):
