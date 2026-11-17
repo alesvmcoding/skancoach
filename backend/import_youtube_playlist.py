@@ -40,9 +40,11 @@ CSV_COLUMNS = (
     "profit_per_hour", "profit_display", "profit_source_display", "profit_assumption",
 )
 MANUAL_OVERRIDES = {
-    # Manually confirmed as Solo by the user after reviewing the extracted titles.
+    # Manually confirmed modes for videos whose descriptions need explicit review.
     "Y5aTqA8NC7U": HuntTitle("Solo", 1, False),
     "z6kueqPT1NQ": HuntTitle("Solo", 1, False),
+    "L7S_Nd5VGy0": HuntTitle("Team Hunt (PT)", 4, False),
+    "CiROJQrLssQ": HuntTitle("Team Hunt (PT)", 4, False),
 }
 
 
