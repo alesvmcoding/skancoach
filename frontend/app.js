@@ -431,7 +431,7 @@ function applyFilters() {
   visibleRows = catalog.filter((row) => {
     if (!row.concreteHunt) return false;
     if (term && !`${row.catalogTitle} ${row.title} ${row.channel_title || ""}`.toLocaleLowerCase("pt-BR").includes(term)) return false;
-    if (vocation !== "ALL" && !row.playlistVocations.includes(vocation) && !row.levels.some((item) => item.vocation === vocation)) return false;
+    if (vocation !== "ALL" && row.primaryVocation !== vocation) return false;
     if (mode !== "ALL" && row.hunt_type !== mode) return false;
     const rowDifficulty = difficultyFor(row, playerLevel, vocation);
     if (difficulty !== "ALL" && rowDifficulty !== difficulty) return false;
