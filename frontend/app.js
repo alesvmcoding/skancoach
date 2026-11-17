@@ -1,7 +1,11 @@
 const PAGE_SIZE = 12;
-const ROLE_RE = "MS|EK|ED|RP|EM|Monk|Mage|Sorcerer|Knight|Druid|Paladin";
+// `EM` only means Monk as an uppercase abbreviation. In Portuguese, `em 2026`
+// is a common phrase and must not be parsed as a vocation and level.
+const ROLE_RE = "MS|EK|ED|RP|Monk|Mage|Sorcerer|Knight|Druid|Paladin";
 const ROLE_FIRST_LEVEL_RE = new RegExp(`\\b(${ROLE_RE})\\s*(\\d{2,4})\\b`, "gi");
 const LEVEL_FIRST_ROLE_RE = new RegExp(`\\b(\\d{2,4})\\s*(${ROLE_RE})\\b`, "gi");
+const EM_FIRST_LEVEL_RE = /\bEM\s*((?!(?:19|20)\d{2}\b)\d{2,4})\b/g;
+const LEVEL_FIRST_EM_RE = /\b((?!(?:19|20)\d{2}\b)\d{2,4})\s*EM\b/g;
 const ROLE_ORDER = { MS: 0, MAGE: 0, SORCERER: 0, EK: 1, KNIGHT: 1, ED: 2, DRUID: 2, EM: 3, MONK: 3, RP: 4, PALADIN: 4 };
 const ROLE_NAMES = { MS: "Master Sorcerer", EK: "Elite Knight", ED: "Elder Druid", RP: "Royal Paladin", EM: "Monk" };
 const MODE_NAMES = { "Team Hunt (PT)": "Team Hunt", Duo: "Duo", Trio: "Trio", Solo: "Solo" };
@@ -16,6 +20,7 @@ const cards = $("#cards");
 
 function parseLevels(title, description = "") {
   const source = `${title || ""}\n${description || ""}`;
+  const sourceWithoutEmYears = source.replace(/\bEM\s+20\d{2}\b/gi, " ");
   const bestLevel = new Map();
   const add = (rawVocation, rawLevel) => {
     const alias = rawVocation.toUpperCase();
@@ -23,11 +28,14 @@ function parseLevels(title, description = "") {
     const level = Number(rawLevel);
     if (!bestLevel.has(vocation) || level > bestLevel.get(vocation)) bestLevel.set(vocation, level);
   };
-  for (const match of source.matchAll(ROLE_FIRST_LEVEL_RE)) add(match[1], match[2]);
-  for (const match of source.matchAll(new RegExp(`\\b(${ROLE_RE})\\s+(?:level|lvl|lv\\.?)\\s*(\\d{2,4})\\b`, "gi"))) add(match[1], match[2]);
+  for (const match of sourceWithoutEmYears.matchAll(ROLE_FIRST_LEVEL_RE)) add(match[1], match[2]);
+  for (const match of sourceWithoutEmYears.matchAll(EM_FIRST_LEVEL_RE)) add("EM", match[1]);
+  for (const match of sourceWithoutEmYears.matchAll(new RegExp(`\\b(${ROLE_RE})\\s+(?:level|lvl|lv\\.?)\\s*(\\d{2,4})\\b`, "gi"))) add(match[1], match[2]);
+  for (const match of sourceWithoutEmYears.matchAll(/\bEM\s+(?:level|lvl|lv\.?)\s*((?!(?:19|20)\d{2}\b)\d{2,4})\b/g)) add("EM", match[1]);
   // Some creators write `940 ED`; prefer this actual role-level pair over a
   // later `ED 10+ Raw`, where 10 is the XP rate rather than the character level.
-  for (const match of source.matchAll(LEVEL_FIRST_ROLE_RE)) add(match[2], match[1]);
+  for (const match of sourceWithoutEmYears.matchAll(LEVEL_FIRST_ROLE_RE)) add(match[2], match[1]);
+  for (const match of sourceWithoutEmYears.matchAll(LEVEL_FIRST_EM_RE)) add("EM", match[1]);
   return [...bestLevel.entries()]
     .sort(([a], [b]) => ROLE_ORDER[a] - ROLE_ORDER[b])
     .map(([vocation, level]) => ({ vocation, level }));
@@ -134,7 +142,8 @@ function standardizedTitle(row) {
   const titleName = huntNameFromTitle(row.title);
   const titleIsGenericSeries = /\bmongekoth\b/i.test(row.title || "") && !/\b(?:nagas?|scarlet|naga tanko)\b/i.test(row.title || "");
   const huntName = ((titleName.length < 3 || titleIsGenericSeries) && huntNameFromDescription(row.description)) || titleName || "Hunt não identificada";
-  const vocation = row.levels.map((entry) => entry.vocation).join("/") || vocationFromText(row.title || "") || "Vocação não identificada";
+  const orderedVocations = [...new Set([row.primaryVocation, ...row.levels.map((entry) => entry.vocation)].filter(Boolean))];
+  const vocation = orderedVocations.join("/") || vocationFromText(row.title || "") || "Vocação não identificada";
   const xp = row.xp_raw_display || "não informado";
   const profit = row.profit_display || "não informado";
   return `${vocation} · ${huntName} · XP Raw ${xp} · Profit ${profit}`;
@@ -145,16 +154,28 @@ function vocationFromText(text) {
   return vocationsFromText(value)[0] || "";
 }
 
+function vocationFromTitle(text) {
+  const value = String(text || "").replace(/\bEM\s+20\d{2}\b/gi, " ");
+  const namedMatches = [...value.matchAll(/\b(MS|EK|ED|RP|Monk|Master\s+Sorcerer|Elite\s+Knight|Elder\s+Druid|Royal\s+Paladin|Mage|Sorcerer|Knight|Druid|Paladin)\b/gi)];
+  const emMatches = [...value.matchAll(/\bEM\b/g)];
+  const firstMatch = [...namedMatches, ...emMatches].sort((a, b) => a.index - b.index)[0];
+  if (!firstMatch) return "";
+  const alias = firstMatch[1].toUpperCase();
+  return ({ MAGE: "MS", SORCERER: "MS", KNIGHT: "EK", DRUID: "ED", MONK: "EM", PALADIN: "RP" })[alias] || alias;
+}
+
 function vocationsFromText(text) {
   const value = String(text || "");
+  const valueWithoutEmYears = value.replace(/\bEM\s+20\d{2}\b/gi, " ");
   const patterns = [
     ["MS", /\b(?:MS|Master Sorcerer|Sorcerer|Sorceress|Mage)\b/i],
     ["EK", /\b(?:EK|Elite Knight|Knight)\b/i],
     ["ED", /\b(?:ED|Elder Druid|Druid)\b/i],
-    ["EM", /\b(?:EM|Monk)\b/i],
     ["RP", /\b(?:RP|Royal Paladin|Paladin)\b/i],
   ];
-  return patterns.filter(([, pattern]) => pattern.test(value)).map(([vocation]) => vocation);
+  const vocations = patterns.filter(([, pattern]) => pattern.test(value)).map(([vocation]) => vocation);
+  if (/\bEM\b/.test(valueWithoutEmYears) || /\bMonk\b/i.test(value)) vocations.push("EM");
+  return ["MS", "EK", "ED", "EM", "RP"].filter((vocation) => vocations.includes(vocation));
 }
 
 function enrich(row) {
@@ -166,7 +187,8 @@ function enrich(row) {
     }
   }
   const profitFromDescriptionValue = profitFromDescription(row.description) || profitFromTitle(row.title);
-  const normalized = { ...row, levels, playlistVocations };
+  const primaryVocation = vocationFromTitle(row.title || "") || playlistVocations[0] || levels[0]?.vocation || "";
+  const normalized = { ...row, levels, playlistVocations, primaryVocation };
   if (!normalized.profit_display && profitFromDescriptionValue) {
     normalized.profit_display = profitFromDescriptionValue;
     normalized.profit_source_display = `Descrição: ${profitFromDescriptionValue}`;
@@ -246,7 +268,7 @@ function cardMarkup(row) {
   return `<article class="hunt-card">
     <a class="thumb-wrap" href="${row.video_url}" target="_blank" rel="noopener noreferrer" aria-label="Assistir: ${escapeHtml(row.title)}">
       <img loading="lazy" src="https://i.ytimg.com/vi/${encodeURIComponent(row.video_id)}/hqdefault.jpg" alt="Miniatura do vídeo" />
-      <span class="thumb-vocation">${row.levels[0]?.vocation || row.playlistVocations[0] || "HUNT"}</span>
+      <span class="thumb-vocation">${row.primaryVocation || row.levels[0]?.vocation || row.playlistVocations[0] || "HUNT"}</span>
       <span class="thumb-position">#${row.position}</span><span class="play-button">▶</span>
     </a>
     <div class="hunt-card-body">
