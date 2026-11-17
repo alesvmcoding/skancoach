@@ -2,7 +2,7 @@ name: Publicar interface no GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   workflow_dispatch:
 
 permissions:
@@ -25,6 +25,6 @@ jobs:
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: interface
+          path: frontend
       - id: deployment
         uses: actions/deploy-pages@v4

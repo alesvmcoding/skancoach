@@ -1,5 +1,5 @@
 import unittest
-from xp_calculator import calculate_raw_xp
+from backend.xp_calculator import calculate_raw_xp
 
 class RawXpPercentageTests(unittest.TestCase):
     def test_percentages_are_normalized_to_raw(self):

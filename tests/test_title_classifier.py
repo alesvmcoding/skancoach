@@ -4,9 +4,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from import_youtube_playlist import CSV_COLUMNS, classify_video_title, reclassify_existing
-from persist_classification import ensure_classification_columns, store_title_classification
-from title_classifier import HuntTitle, classify_hunt_title
+from backend.import_youtube_playlist import CSV_COLUMNS, classify_video_title, reclassify_existing
+from backend.persist_classification import ensure_classification_columns, store_title_classification
+from backend.title_classifier import HuntTitle, classify_hunt_title
 
 
 class ClassifyHuntTitleTests(unittest.TestCase):

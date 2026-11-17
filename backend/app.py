@@ -19,12 +19,13 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from database import DATABASE_ERRORS, connect_database, initialize_postgres_catalog, seed_postgres_community_data
+from .database import DATABASE_ERRORS, connect_database, initialize_postgres_catalog, seed_postgres_community_data
 
 
-INTERFACE_DIR = Path(__file__).resolve().parent
-DATABASE_PATH = INTERFACE_DIR.parent / "skan_coach.db"
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+FRONTEND_DIR = PROJECT_ROOT / "frontend"
+DATA_DIR = PROJECT_ROOT / "data"
+DATABASE_PATH = DATA_DIR / "skan_coach.db"
 HOST = os.environ.get("SKAN_HOST", "127.0.0.1")
 PORT = int(os.environ.get("PORT", "8000"))
 ALLOWED_ORIGINS = {origin.strip().rstrip("/") for origin in os.environ.get("SKAN_ALLOWED_ORIGINS", "").split(",") if origin.strip()}
@@ -129,14 +130,13 @@ def refresh_static_catalog():
             LEFT JOIN managed_sources ms ON ms.source_key=pv.playlist_id
             GROUP BY v.video_id ORDER BY position""").fetchall()
     data = json.dumps([dict(row) for row in rows], ensure_ascii=False)
-    (INTERFACE_DIR / "catalog-data.js").write_text(
+    (FRONTEND_DIR / "catalog-data.js").write_text(
         f"window.SKAN_CATALOG = {data};\n", encoding="utf-8"
     )
 
 
 def refresh_sources_worker(sources: list[dict]):
     global REFRESH_STATE
-    script = DATABASE_PATH.parent / "import_youtube_playlist.py"
     python = os.environ.get("PYTHON_EXECUTABLE") or sys.executable
     updated, videos, errors = 0, 0, []
     try:
@@ -145,7 +145,7 @@ def refresh_sources_worker(sources: list[dict]):
                 REFRESH_STATE["completed_sources"] = index - 1
                 REFRESH_STATE["current_source"] = source["name"]
             kind = source["source_type"]
-            command = [python, str(script)]
+            command = [python, "-m", "backend.import_youtube_playlist"]
             if kind == "channel":
                 command += ["--channel", source["source_url"]]
             elif kind == "video":
@@ -155,7 +155,7 @@ def refresh_sources_worker(sources: list[dict]):
                 vocation = source["vocation"] if source["vocation"] in {"MS", "EK", "ED", "EM", "RP"} else "MS"
                 command += ["--playlist-id", source["source_url"], "--vocation", vocation, "--playlist-name", source["name"]]
             try:
-                result = subprocess.run(command, cwd=DATABASE_PATH.parent, capture_output=True, text=True, timeout=600, env=os.environ.copy())
+                result = subprocess.run(command, cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=600, env=os.environ.copy())
                 if result.returncode:
                     errors.append({"source": source["name"], "error": (result.stderr or result.stdout)[-1200:]})
                 else:
@@ -178,7 +178,7 @@ def refresh_sources_worker(sources: list[dict]):
 
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory=str(INTERFACE_DIR), **kwargs)
+        super().__init__(*args, directory=str(FRONTEND_DIR), **kwargs)
 
     def do_GET(self):
         path = urlparse(self.path).path
@@ -505,15 +505,14 @@ class Handler(SimpleHTTPRequestHandler):
                 raise ValueError("Selecione uma vocação válida.")
             if not os.environ.get("YOUTUBE_API_KEY"):
                 raise ValueError("Configure YOUTUBE_API_KEY no servidor para importar vídeos.")
-            script = DATABASE_PATH.parent / "import_youtube_playlist.py"
-            command = [os.environ.get("PYTHON_EXECUTABLE") or sys.executable, str(script)]
+            command = [os.environ.get("PYTHON_EXECUTABLE") or sys.executable, "-m", "backend.import_youtube_playlist"]
             if source_type == "channel":
                 command += ["--channel", source_url]
             elif source_type == "video":
                 command += ["--video", source_url, "--vocation", vocation]
             else:
                 command += ["--playlist-id", source_url, "--vocation", vocation, "--playlist-name", name or vocation]
-            completed = subprocess.run(command, cwd=DATABASE_PATH.parent, capture_output=True, text=True, timeout=600, env=os.environ.copy())
+            completed = subprocess.run(command, cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=600, env=os.environ.copy())
             if completed.returncode:
                 raise RuntimeError((completed.stderr or completed.stdout)[-3000:])
             with connect_database(DATABASE_PATH) as connection:

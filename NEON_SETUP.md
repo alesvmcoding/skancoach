@@ -1,51 +1,31 @@
-# Preparar o Skan Coach para Neon + Render + GitHub Pages
+# Neon, Render e GitHub Pages
 
-## O que já está preparado
+O projeto pode usar SQLite localmente e PostgreSQL no Neon quando a variável secreta `DATABASE_URL` está definida.
 
-- O projeto continua usando SQLite quando `DATABASE_URL` não está definida, para
-  manter o uso local como antes.
-- Com `DATABASE_URL`, o servidor e o importador usam PostgreSQL via psycopg.
-- Na primeira inicialização com Neon vazio, o servidor cria o esquema e semeia
-  o catálogo do arquivo `skan_coach.db`. Também importa registros locais de
-  feedbacks, doações, fontes e pedidos de divulgação quando essas tabelas existem.
-- As chamadas da interface podem usar a URL externa da API em `interface/api-config.js`.
-- `Procfile` informa ao provedor como iniciar o serviço Python.
+## Estrutura de publicação
 
-## Configuração quando criar as contas
+- Render executa o servidor Python com `python -m backend.app` (configurado no `Procfile` e em `render.yaml`).
+- O servidor usa Neon para catálogo, feedback, doações, fontes e solicitações quando `DATABASE_URL` está configurada.
+- GitHub Pages publica a pasta `frontend/`; o workflow está em `.github/workflows/pages.yml`.
 
-1. Crie um projeto PostgreSQL no Neon e copie a connection string com SSL.
-2. Publique o código como Web Service Python no Render, usando a pasta raiz do
-   projeto. O comando de inicialização está no `Procfile`.
-3. No painel de variáveis do Render, configure `DATABASE_URL` com a string do
-   Neon e marque-a como secreta. Nunca coloque essa string no GitHub ou no
-   `api-config.js`.
-4. Configure `SKAN_HOST=0.0.0.0`, `SKAN_ADMIN_KEY`, `YOUTUBE_API_KEY` e
-   `SKAN_ALLOWED_ORIGINS=https://SEU-USUARIO.github.io`. O Render fornece `PORT`.
-5. Em `interface/api-config.js`, defina `SKAN_API_BASE` para o endereço público
-   do Web Service Render (ex.: `https://skan-hunt-api.onrender.com`, sem barra
-   final). Esse endereço é público; não é uma senha.
-6. Publique os arquivos da pasta `interface/` no GitHub Pages.
+## Variáveis do servidor
 
-## Migração do catálogo atual
+Configure no Render, como segredos quando aplicável:
 
-O primeiro início com um banco Neon vazio importa as tabelas de vídeos,
-playlists e ligações a partir de `skan_coach.db`. Também copia os registros de
-comunidade locais disponíveis. A cópia do catálogo só ocorre quando a tabela
-`videos` no Neon está vazia; depois disso, Neon é a fonte principal de dados.
+- `DATABASE_URL`: connection string do Neon.
+- `YOUTUBE_API_KEY`: permite importar e atualizar fontes do YouTube.
+- `SKAN_ADMIN_KEY`: chave de acesso ao Portal administrativo.
+- `SKAN_ALLOWED_ORIGINS`: origem do frontend, se ele estiver hospedado em domínio separado.
+- `SKAN_SMTP_USER`, `SKAN_SMTP_PASSWORD` e, se necessário, `SKAN_SMTP_HOST`/`SKAN_SMTP_PORT`: envio de notificações por e-mail.
 
-Não apague nem substitua o `skan_coach.db` empacotado antes da primeira carga.
-Depois da implantação, novos vídeos importados pelo Portal serão gravados no
-Neon porque o importador recebe a mesma variável `DATABASE_URL`.
+Não coloque essas chaves nos arquivos públicos do frontend. `frontend/api-config.js` contém somente `SKAN_API_BASE`, a URL pública do servidor.
 
-## E-mail
+## Carga inicial do banco
 
-O envio SMTP atual funciona em ambientes locais compatíveis. Alguns provedores
-gratuitos de hospedagem bloqueiam SMTP; nesse caso, os pedidos e doações ainda
-serão salvos, mas os avisos por e-mail exigirão migração para um serviço de e-mail
-com API HTTPS.
+Se a tabela do catálogo no Neon estiver vazia, o servidor inicializa o esquema e carrega o catálogo de `data/skan_coach.db`. Registros locais de feedback, doações e fontes também podem ser carregados quando existem no SQLite. Depois da primeira carga, o Neon passa a ser a fonte principal. Preserve o banco em `data/` para a carga inicial.
 
-## Observação sobre o plano gratuito
+O importador usa a mesma `DATABASE_URL` do servidor; novas importações do Portal são gravadas no Neon.
 
-Neon mantém os dados no serviço de banco quando a API reinicia, mas o plano
-gratuito tem limites de armazenamento, computação e transferência. Configure
-exportações periódicas do banco para ter uma cópia independente.
+## Cópia de segurança
+
+Mantenha exportações periódicas dos dados do Neon. Os limites de armazenamento, computação e transferência dependem do plano configurado no serviço.

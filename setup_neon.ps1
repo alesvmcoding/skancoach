@@ -4,8 +4,8 @@ $projectDir = $PSScriptRoot
 if ([string]::IsNullOrWhiteSpace($projectDir)) {
     throw 'Execute o arquivo setup_neon.ps1 com & e o caminho completo, em vez de colar seu conteúdo no terminal.'
 }
-if (-not (Test-Path -LiteralPath (Join-Path $projectDir 'database.py') -PathType Leaf)) {
-    throw 'Coloque setup_neon.ps1 na pasta do Skan Coach, ao lado de database.py.'
+if (-not (Test-Path -LiteralPath (Join-Path $projectDir 'backend\database.py') -PathType Leaf)) {
+    throw 'Coloque setup_neon.ps1 na pasta raiz do Skan Coach, que contém as pastas backend, frontend e data.'
 }
 $nodeDir = Join-Path $env:ProgramFiles "nodejs"
 $nodeExe = Join-Path $nodeDir "node.exe"

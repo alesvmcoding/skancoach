@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import sqlite3
 
-from title_classifier import classify_hunt_title
+from .title_classifier import classify_hunt_title
 
 
 def ensure_classification_columns(connection: sqlite3.Connection) -> None:

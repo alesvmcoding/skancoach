@@ -1,110 +1,85 @@
-# Atualização do importador do Skan Coach AI
+# Skan Coach — AI Hunt Planner
 
-Este conjunto classifica `x4` e `x5` como `Team Hunt (PT)`, `duo` e `x2` como
-`Duo` (2 jogadores), e `x3` como `Trio` (3 jogadores). Também reconhece `TH`
-e `Team Hunt`; quando a descrição lista os membros, usa essa lista para contar
-a equipe. A regra usa
-limites de token: `2x loot` e ocorrências dentro de palavras maiores não são
-interpretadas como quantidade de jogadores. Se o título combinar um tamanho
-de grupo com `solo`, a categoria do grupo prevalece e `needs_review` fica ativo.
-Indicadores de categorias diferentes também são sinalizados para revisão; a
-categoria de maior tamanho prevalece.
+O **Skan Coach** é um catálogo comunitário de hunts de Tibia. Ele reúne vídeos de diferentes criadores em um formato comum para ajudar jogadores a encontrar respawns, comparar XP e profit e escolher hunts adequadas à sua vocação e level.
 
-## Arquivos
+## O que a aplicação faz
 
-- `import_youtube_playlist.py`: importa todas as páginas de uma playlist
-  pública ou os vídeos enviados por um canal, gravando CSV e SQLite com a
-  biblioteca padrão do Python.
-- `title_classifier.py`: regra de classificação.
-- `persist_classification.py`: migração incremental das colunas e atualização
-  da linha já importada em `videos`.
-- `test_title_classifier.py`: testes unitários, incluindo falsos positivos,
-  prioridade de Team Hunt e persistência do conflito.
+- Importa vídeos públicos de playlists, canais ou links individuais do YouTube.
+- Organiza o catálogo por vocação, nome da hunt, modalidade e level.
+- Lê os números de XP e profit/waste dos títulos. A XP é normalizada para XP Raw quando o título informa percentual; sem percentual ou indicação de Raw, aplica a regra de 150% presumidos. Waste é exibido como profit negativo.
+- Permite buscar, filtrar por level e vocação, comparar resultados e abrir o vídeo original.
+- Recebe relatos da comunidade sobre testes de respawn, resultados de XP/profit e vídeos desatualizados.
+- Registra doações em Tibia Coins como pendentes. O administrador valida a transferência antes de atualizar o ranking.
+- Oferece um portal administrativo para adicionar, atualizar e remover fontes do YouTube e destacar conteúdos patrocinados.
 
-## Playlists e vocações
+O objetivo é transformar títulos e descrições publicados por criadores diferentes em um catálogo prático, sem substituir o vídeo ou a experiência de quem testa a hunt. A comunidade pode complementar os dados com resultados atuais.
 
-`playlist_manifest.json` reúne as listas de MS, EK, RP, ED e EM (Monk). Para
-importar ou atualizar todas de uma vez, abra o PowerShell nesta pasta, defina
-`YOUTUBE_API_KEY` nesta mesma janela e rode:
+## Organização dos arquivos
 
-```powershell
-$env:YOUTUBE_API_KEY = "SUA_CHAVE"
-python .\import_youtube_playlist.py --sync-config
-```
+- `backend/`: servidor web, importador do YouTube, integração com SQLite/Neon e regras de XP, profit e modalidade.
+- `frontend/`: site, portal administrativo, formulário de divulgação, estilos e configuração da API.
+- `data/`: manifesto das playlists, exportação CSV e banco SQLite usado localmente e como carga inicial do Neon.
+- `tests/`: testes automatizados das regras de classificação e XP.
+- `render.yaml`, `Procfile` e `requirements.txt`: configuração de execução e hospedagem.
+- `setup_neon.ps1`: utilitário opcional para preparar a conexão local com o Neon. O arquivo `.env.local` criado por ele contém segredos e não deve ser enviado ao GitHub.
 
-O mesmo classificador de modalidade, XP Raw e profit é aplicado a todas as
-vocações. Para acrescentar uma playlist, adicione ao manifesto seu ID, a sigla
-da vocação (`MS`, `EK`, `RP`, `ED` ou `EM`) e o nome que aparecerá na interface.
-Para importar apenas uma lista, use `--playlist-id "ID_OU_URL" --vocation EK`.
-O script cria/atualiza `playlist_videos.csv` e `skan_coach.db`.
+## Rodar localmente
 
-### Importar hunts de um canal (sem playlist)
-
-Passe o link público do canal, um ID `UC...` ou um identificador `@handle`.
-O importador percorre a lista de envios do canal e mantém somente vídeos cujo
-título contenha uma taxa de XP numérica ou um valor numérico associado a
-`Profit` ou `Waste`. Waste é registrado como profit negativo. Os vídeos filtrados
-são acrescentados ao catálogo e não removem as playlists já importadas. Exemplo:
+Use Python instalado e, na pasta raiz do projeto, instale as dependências:
 
 ```powershell
-python .\import_youtube_playlist.py --channel "https://www.youtube.com/@nome-do-canal"
+python -m pip install -r requirements.txt
 ```
 
-Para adicionar apenas um vídeo de hunt, use a URL ou o ID:
+Defina as chaves necessárias na janela do PowerShell. `YOUTUBE_API_KEY` é necessária para importar do YouTube; o site pode abrir sem ela. `DATABASE_URL` só é necessária quando você quer usar Neon em vez do banco SQLite local.
 
 ```powershell
-python .\import_youtube_playlist.py --video "https://www.youtube.com/watch?v=VIDEO_ID" --vocation EK
+$env:YOUTUBE_API_KEY = "SUA_CHAVE_DO_YOUTUBE"
+$env:SKAN_ADMIN_KEY = "UMA_CHAVE_ADMINISTRATIVA_FORTE"
+python -m backend.app
 ```
 
-A chave `YOUTUBE_API_KEY` precisa estar definida nessa janela do PowerShell,
-como na importação das playlists. A API do YouTube só permite consultar canais
-públicos e seus vídeos públicos.
+Abra `http://127.0.0.1:8000`. Para desligar, volte ao terminal e pressione `Ctrl+C`.
 
-O CSV pode ser aberto no Excel. O banco contém a tabela `videos` e as tabelas
-`playlists` e `playlist_videos`, que ligam cada vídeo à sua lista e vocação.
-Entradas indisponíveis sem `videoId` são ignoradas. A extração percorre páginas
-de até 50 itens usando o `nextPageToken` oficial da API.
+## Importar ou atualizar playlists
 
-## XP Raw
-
-O campo `xp_raw_display` traz a XP/h equivalente a 100%: rates explicitamente
-marcadas como `Raw` são mantidas; se o título informar um percentual, o rate é
-dividido por esse percentual; quando não houver percentual nem `Raw`, o padrão
-de 150% informado pelo usuário é aplicado e identificado como presumido. A
-interface também mostra o rate original e a base usada no cálculo. Rates de XP
-com modificadores adicionais como Prey/Book Boosted são sinalizadas, pois o
-bônus extra não pode ser separado apenas pelo título.
-
-O campo `profit_display` é extraído somente do número ligado à palavra
-`Profit`, sem confundi-lo com a XP Raw. Se o título disser apenas `Profit`, sem
-`/h`, o valor é tratado como o resultado de uma hunt de 1 hora e essa suposição
-fica registrada em `profit_assumption`.
-
-Quando a regra de classificação mudar, reaplique-a aos arquivos existentes sem
-fazer novas chamadas à API:
+O manifesto `data/playlist_manifest.json` contém as playlists cadastradas. Para importar ou sincronizar todas:
 
 ```powershell
-python .\import_youtube_playlist.py --reclassify-existing
+python -m backend.import_youtube_playlist --sync-config
 ```
 
-## Interface local
+Também é possível importar um canal ou vídeo individual:
 
-Para abrir o catálogo visual conectado ao banco, consulte
-`interface/README.md`. O servidor local usa apenas a biblioteca padrão do
-Python e serve a interface em `http://127.0.0.1:8000`.
+```powershell
+python -m backend.import_youtube_playlist --channel "https://www.youtube.com/@nome-do-canal"
+python -m backend.import_youtube_playlist --video "https://www.youtube.com/watch?v=VIDEO_ID" --vocation EK
+```
 
-## Integração em outro projeto
+Canais podem conter várias vocações; os vídeos são classificados individualmente. O importador só considera vídeos de canal quando o título tem um número ligado a XP, Profit ou Waste. Para atualizar as fontes cadastradas pelo Portal, use **Atualizar todas as fontes**.
 
-Depois de criar a tabela `videos`, chame `ensure_classification_columns(conn)`.
-Ao inserir ou atualizar cada vídeo, chame
-`store_title_classification(conn, video_id, title)` e confirme a transação.
-O helper pressupõe que a tabela existente tenha `video_id` como identificador
-do vídeo. Se o esquema atual usar outro nome de tabela ou chave, adapte somente
-essa consulta ao esquema real.
+## Classificação das hunts
 
-Execute os testes com `python -m unittest -v` nesta pasta.
+A modalidade pode vir do título ou de uma lista estruturada de jogadores na descrição. `x2`/`duo` vira Duo, `x3` vira Trio e `x4`/`x5` vira Team Hunt. O título fornece a vocação e o jogador em destaque, sem contar novamente essa pessoa quando ela também aparece na descrição. Se Solo e uma equipe entrarem em conflito, a equipe prevalece e o vídeo fica sinalizado para revisão. Sem evidência de grupo, a modalidade padrão é Solo.
 
-Este pacote é um importador autocontido; não requer um projeto Skan Coach AI
-pré-existente. A API key é lida da variável `YOUTUBE_API_KEY` e não é gravada
-nos arquivos de saída.
+## Banco de dados
 
+Sem `DATABASE_URL`, a aplicação usa `data/skan_coach.db` para desenvolvimento local. Com `DATABASE_URL`, usa PostgreSQL no Neon; mantenha essa URL como variável secreta no serviço de hospedagem. Na primeira inicialização de um banco Neon vazio, o catálogo e os registros locais existentes são carregados a partir do SQLite empacotado.
+
+O arquivo `data/playlist_videos.csv` é uma exportação conveniente para análise. O banco configurado pela aplicação é a fonte usada pelo catálogo e pelo Portal.
+
+## Hospedagem
+
+O Render inicia o servidor pelo comando `python -m backend.app`, definido nos arquivos de deploy. Configure nele `DATABASE_URL`, `YOUTUBE_API_KEY`, `SKAN_ADMIN_KEY` e, se usar notificações, as variáveis SMTP. Não coloque chaves no frontend.
+
+O GitHub Pages publica a pasta `frontend/` pelo workflow em `.github/workflows/pages.yml`. Para separar frontend e API, configure `SKAN_API_BASE` em `frontend/api-config.js` com a URL pública do servidor e `SKAN_ALLOWED_ORIGINS` no Render com a origem do GitHub Pages.
+
+Mais detalhes de configuração estão em [`NEON_SETUP.md`](NEON_SETUP.md) e [`frontend/README.md`](frontend/README.md).
+
+## Executar os testes
+
+Na pasta raiz do projeto:
+
+```powershell
+python -m unittest discover -s tests -v
+```

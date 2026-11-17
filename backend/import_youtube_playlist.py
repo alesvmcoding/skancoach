@@ -14,10 +14,10 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qs, urlencode, urlparse
 from urllib.request import urlopen
 
-from title_classifier import HuntTitle, classify_hunt_title
-from profit_calculator import extract_profit
-from xp_calculator import calculate_raw_xp
-from database import DATABASE_ERRORS, connect_database
+from .title_classifier import HuntTitle, classify_hunt_title
+from .profit_calculator import extract_profit
+from .xp_calculator import calculate_raw_xp
+from .database import DATABASE_ERRORS, connect_database
 
 
 API_URL = "https://www.googleapis.com/youtube/v3/playlistItems"
@@ -25,7 +25,8 @@ CHANNELS_API_URL = "https://www.googleapis.com/youtube/v3/channels"
 VIDEOS_API_URL = "https://www.googleapis.com/youtube/v3/videos"
 DEFAULT_PLAYLIST_ID = "PLOF-eZpj5a6mms9h0W5hC7eWNs6omp4PW"
 SUPPORTED_VOCATIONS = {"MS", "EK", "ED", "RP", "EM"}
-OUTPUT_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+OUTPUT_DIR = PROJECT_ROOT / "data"
 MANIFEST_PATH = OUTPUT_DIR / "playlist_manifest.json"
 CSV_PATH = OUTPUT_DIR / "playlist_videos.csv"
 DB_PATH = OUTPUT_DIR / "skan_coach.db"
@@ -576,7 +577,7 @@ def main() -> int:
         write_sqlite(rows)
         print(f"Banco SQLite salvo: {DB_PATH}")
         try:
-            from interface.app import refresh_static_catalog
+            from .app import refresh_static_catalog
             refresh_static_catalog()
             print("Catálogo da interface atualizado.")
         except (ImportError, OSError, *DATABASE_ERRORS) as exc:
