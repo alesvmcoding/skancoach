@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#101b1a">
+  <title>Portal administrativo — Skan Coach</title>
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem("skan-theme")||"light"}catch{document.documentElement.dataset.theme="light"}</script>
+  <link rel="stylesheet" href="styles.css"><script src="api-config.js" defer></script><script src="portal.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="index.html" aria-label="Skan Coach, início"><span class="brand-mark">S<span>✳</span></span><span class="brand-name">skan<span>coach</span><small>AI HUNT PLANNER</small></span></a>
+      <div class="side-label">SEU ESPAÇO</div>
+      <a class="side-link" href="index.html#catalog"><span class="nav-icon">⌕</span> Encontrar hunts</a>
+      <a class="side-link" href="divulgar.html"><span class="nav-icon">↗</span> Divulgar hunt</a>
+      <a class="side-link active" href="portal.html"><span class="nav-icon">▣</span> Portal</a>
+      <div class="side-note"><div class="note-orb">⚙</div><strong>Área administrativa</strong><p>Gerencie as fontes, envios da comunidade e destaques.</p><span class="source-tag">ACESSO RESTRITO</span></div>
+      <div class="sidebar-footer"><span class="status-dot"></span> Skan Coach AI</div>
+    </aside>
+    <main class="main-content">
+      <header class="topbar"><div class="breadcrumb"><a href="index.html">CATÁLOGO</a><span>/</span><b>PORTAL ADMINISTRATIVO</b></div><div class="topbar-right"><a class="topbar-action" href="divulgar.html">Divulgar hunt</a><a class="topbar-action" href="index.html">Voltar ao catálogo</a><button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false"><span id="theme-icon" aria-hidden="true">☾</span><span id="theme-label">Modo escuro</span></button></div></header>
+      <section class="portal-intro"><div class="eyebrow">GERENCIAMENTO SKAN COACH</div><h1>Portal administrativo</h1><p>Importe ou remova fontes do YouTube, revise contribuições em Tibia Coins e analise pedidos da comunidade.</p></section>
+      <section class="portal-login-card"><h2>Acesso protegido</h2><p>Use a chave administrativa configurada no servidor. A chave fica nesta sessão do navegador.</p><form id="admin-login-form" class="admin-login"><label>Chave administrativa<input name="admin_key" type="password" required placeholder="SKAN_ADMIN_KEY"></label><button type="submit">Acessar portal</button></form><small id="admin-status" role="status"></small></section>
+      <div id="admin-tools" hidden>
+        <section class="portal-block"><div class="section-heading"><div><div class="eyebrow">FONTES DO CATÁLOGO</div><h2>Importar ou remover YouTube</h2><p>Playlists, canais e vídeos individuais. Remover uma fonte preserva vídeos que também pertençam a outra.</p></div><button id="refresh-sources" class="refresh-sources-button" type="button">Atualizar todas as fontes</button></div><p class="refresh-help">Busca vídeos novos de todas as playlists e canais cadastrados. Requer internet e <code>YOUTUBE_API_KEY</code>; pode levar alguns minutos.</p><p id="refresh-status" class="refresh-status" role="status" aria-live="polite"></p>
+          <div class="admin-columns"><form id="source-form" class="portal-card"><h3>Importar fonte</h3><p class="import-requirement">A importação consulta o YouTube: precisa de internet e da variável <code>YOUTUBE_API_KEY</code> definida antes de iniciar o servidor.</p><label>Tipo<select name="source_type"><option value="playlist">Playlist</option><option value="channel">Canal (várias vocações)</option><option value="video">Vídeo individual</option></select></label><label>URL ou ID do YouTube<input name="source_url" required placeholder="Cole a URL pública"></label><label>Nome da playlist (se aplicável)<input name="name" maxlength="100"></label><label id="source-vocation-label">Vocação<select name="vocation"><option value="MS">MS</option><option value="EK">EK</option><option value="ED">ED</option><option value="EM">EM</option><option value="RP">RP</option><option value="CHANNEL" hidden>Identificar por vídeo</option></select></label><p id="channel-vocation-note" class="channel-vocation-note" hidden>Não é necessário escolher uma vocação para o canal. Cada vídeo será classificado pelo próprio título.</p><button type="submit">Importar para o catálogo</button><small id="source-status" class="source-status" role="status">Aguarde a confirmação aqui após iniciar uma importação.</small></form><div class="portal-card"><h3>Fontes cadastradas</h3><div id="admin-sources"></div></div></div>
+        </section>
+        <section class="portal-block"><div class="admin-columns"><div class="portal-card"><h3>Contribuições de Tibia Coins</h3><p>Confira no jogo as transferências para <b>Lord Skanzin — Jadebra</b>. Só confirme depois de validar.</p><div id="admin-donations"></div></div><div class="portal-card"><h3>Pedidos de divulgação</h3><p>Revise os links e os títulos. Prepare a importação de um pedido quando estiver aprovado.</p><div id="admin-promotions"></div></div></div></section>
+        <section class="portal-block"><div class="portal-card"><div class="eyebrow">DIVULGAÇÃO PATROCINADA</div><h3>Preparação para promoções</h3><p>Após receber e conferir a contribuição em TC, marque uma fonte como patrocinada. O site exibe o rótulo “Patrocinado”. Cobrança e confirmação permanecem manuais.</p></div></section>
+      </div>
+      <footer class="page-footer"><span>SKAN COACH AI</span><span>Mantenha as chaves do YouTube e do portal apenas no servidor.</span></footer>
+    </main>
+  </div>
+</body>
+</html>

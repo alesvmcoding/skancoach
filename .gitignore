@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+.neon
+.neon-cli/
+.neon-setup-logs/
+.npm-cache/
+node_modules/

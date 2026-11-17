@@ -1,0 +1,29 @@
+{
+  "playlists": [
+    {
+      "playlist_id": "PLOF-eZpj5a6mms9h0W5hC7eWNs6omp4PW",
+      "vocation": "MS",
+      "name": "Master Sorcerer"
+    },
+    {
+      "playlist_id": "PLOF-eZpj5a6lAjEXsXBqPzA7ND_duwc9v",
+      "vocation": "EK",
+      "name": "Elite Knight"
+    },
+    {
+      "playlist_id": "PLOF-eZpj5a6lUEIhooKZ4D5PPaJ6kqgWW",
+      "vocation": "RP",
+      "name": "Royal Paladin"
+    },
+    {
+      "playlist_id": "PLOF-eZpj5a6lwsH4Sza0fAqBApi6dyRuD",
+      "vocation": "ED",
+      "name": "Elder Druid"
+    },
+    {
+      "playlist_id": "PLOF-eZpj5a6luTPBGLrkYU6MZzMOyMzxl",
+      "vocation": "EM",
+      "name": "Monk"
+    }
+  ]
+}

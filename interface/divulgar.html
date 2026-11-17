@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101b1a">
+  <title>Divulgar uma hunt — Skan Coach</title>
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem("skan-theme")||"light"}catch{document.documentElement.dataset.theme="light"}</script>
+  <link rel="stylesheet" href="styles.css">
+  <script src="api-config.js" defer></script>
+  <script src="divulgar.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="index.html" aria-label="Skan Coach, início"><span class="brand-mark">S<span>✳</span></span><span class="brand-name">skan<span>coach</span><small>AI HUNT PLANNER</small></span></a>
+      <div class="side-label">SEU ESPAÇO</div>
+      <a class="side-link" href="index.html#catalog"><span class="nav-icon">⌕</span> Encontrar hunts</a>
+      <a class="side-link active" href="divulgar.html"><span class="nav-icon">↗</span> Divulgar hunt</a>
+      <a class="side-link" href="portal.html"><span class="nav-icon">▣</span> Portal</a>
+      <div class="side-note"><div class="note-orb">✦</div><strong>Compartilhe seu conteúdo</strong><p>Ajude outros jogadores a descobrir novas hunts.</p><span class="source-tag">COMUNIDADE · YOUTUBE</span></div>
+      <div class="sidebar-footer"><span class="status-dot"></span> Skan Coach AI</div>
+    </aside>
+    <main class="main-content">
+      <header class="topbar"><div class="breadcrumb"><a href="index.html">CATÁLOGO</a><span>/</span><b>DIVULGAR HUNT</b></div><div class="topbar-right"><a class="topbar-action" href="portal.html">Portal</a><a class="topbar-action" href="index.html">Voltar ao catálogo</a><button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false"><span id="theme-icon" aria-hidden="true">☾</span><span id="theme-label">Modo escuro</span></button></div></header>
+      <section class="hero promotion-hero"><div class="hero-copy"><div class="eyebrow"><span class="eyebrow-line"></span> SUA HUNT PODE AJUDAR OUTROS</div><h1>Compartilhe sua hunt<br><em>com a comunidade.</em></h1><p>Envie um vídeo ou canal para análise. Após a revisão, os vídeos elegíveis podem entrar no catálogo com os dados da hunt.</p></div></section>
+      <div class="promotion-page-grid">
+        <form id="promotion-form" class="community-card">
+          <div class="eyebrow">ENVIO PARA ANÁLISE</div><h2>Divulgue seu canal ou vídeo</h2>
+          <p>Os envios são revisados antes de aparecer no catálogo. No momento, o envio é gratuito. Se houver divulgação patrocinada no futuro, ela será identificada claramente.</p>
+          <label>Seu apelido ou nome do canal<input name="creator_name" maxlength="80" required placeholder="Ex.: Skan Hunt"></label>
+          <label>Link do vídeo ou canal<input name="youtube_url" type="url" maxlength="300" required placeholder="https://youtube.com/watch?v=… ou youtube.com/@canal"></label>
+          <label>Vocação<select name="vocation" required><option value="">Selecione</option><option value="CHANNEL">Canal com várias vocações (identificar por vídeo)</option><option value="MS">Master Sorcerer (MS)</option><option value="EK">Elite Knight (EK)</option><option value="ED">Elder Druid (ED)</option><option value="EM">Monk (EM)</option><option value="RP">Royal Paladin (RP)</option></select></label>
+          <label>Observação para a revisão (opcional)<textarea name="note" maxlength="500" rows="4" placeholder="Respawn, level indicado ou outras informações úteis"></textarea></label>
+          <label class="form-trap" aria-hidden="true">Deixe este campo vazio<input name="website" tabindex="-1" autocomplete="off"></label>
+          <button type="submit">Enviar para análise</button><small id="promotion-status" role="status">O pedido ficará pendente até ser revisado.</small>
+        </form>
+        <aside class="community-card title-guide">
+          <div class="eyebrow">PADRÃO DE TÍTULO</div><h2>Como titular para importar</h2>
+          <p>Para o importador encontrar uma hunt em um canal, o título precisa incluir um valor numérico de XP ou de Profit/Waste.</p>
+          <ul><li><b>XP:</b> <code>8kk/h</code>, <code>12kk Raw</code> ou <code>450k XP</code>.</li><li><b>Profit positivo:</b> <code>1.5kk Profit</code>.</li><li><b>Resultado negativo:</b> <code>300k Waste</code> (exibido como valor negativo).</li><li>Inclua o <b>nome do respawn</b>; se possível, também <b>vocação e level</b>.</li><li>Modalidade pode ser <b>Solo</b>, <b>Duo/x2</b>, <b>Trio/x3</b> ou <b>Team Hunt/x4/x5</b>.</li></ul>
+          <div class="title-example"><b>Exemplos</b><code>EK 900 Solo Asura Palace 8kk Raw + 1kk Profit</code><code>ED 700 Issavi 5kk/h 300k Waste</code></div>
+          <p class="guide-note">Títulos claros ajudam a identificar vocação, respawn, XP e resultado. Vídeos de canal só entram automaticamente quando o título tem valor numérico de XP ou Profit/Waste; a equipe pode revisar os casos enviados.</p>
+        </aside>
+      </div>
+      <footer class="page-footer"><span>SKAN COACH AI</span><span>Divulgação sujeita a revisão editorial.</span></footer>
+    </main>
+  </div>
+</body>
+</html>

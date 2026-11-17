@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101b1a">
+  <title>Skan Coach — Catálogo de Hunts</title>
+  <script>
+    try { document.documentElement.dataset.theme = localStorage.getItem("skan-theme") || "light"; }
+    catch { document.documentElement.dataset.theme = "light"; }
+  </script>
+  <link rel="preconnect" href="https://i.ytimg.com">
+  <link rel="stylesheet" href="styles.css">
+  <script src="catalog-data.js" defer></script>
+  <script src="api-config.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#top" aria-label="Skan Coach, início">
+        <span class="brand-mark">S<span>✳</span></span>
+        <span class="brand-name">skan<span>coach</span><small>AI HUNT PLANNER</small></span>
+      </a>
+      <div class="side-label">SEU ESPAÇO</div>
+      <a class="side-link active" href="#catalog"><span class="nav-icon">⌕</span> Encontrar hunts</a>
+      <a class="side-link" href="#filters"><span class="nav-icon">⚙</span> Preferências</a>
+      <a class="side-link" href="divulgar.html"><span class="nav-icon">↗</span> Divulgar hunt</a>
+      <a class="side-link" href="portal.html"><span class="nav-icon">▣</span> Portal</a>
+      <div class="side-note">
+        <div class="note-orb">✦</div>
+        <strong>Dados reais da playlist</strong>
+        <p>Explore vídeos catalogados e escolha a próxima hunt para testar.</p>
+        <span class="source-tag">PLAYLISTS · YOUTUBE</span>
+      </div>
+      <div class="sidebar-footer"><span class="status-dot"></span> Catálogo local atualizado</div>
+    </aside>
+
+    <main id="top" class="main-content">
+      <header class="topbar">
+        <div class="breadcrumb">CATÁLOGO <span>/</span> <b>TODAS AS VOCAÇÕES</b></div>
+        <div class="topbar-right">
+          <a class="topbar-action" href="divulgar.html">Divulgar hunt</a>
+          <a class="topbar-action" href="portal.html">Portal</a>
+          <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false">
+            <span id="theme-icon" aria-hidden="true">☾</span><span id="theme-label">Modo escuro</span>
+          </button>
+        </div>
+      </header>
+
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="eyebrow-line"></span> SUA PRÓXIMA HUNT COMEÇA AQUI</div>
+          <h1>Encontre a hunt<br><em>que combina com você.</em></h1>
+          <p>Vídeos reais organizados para ajudar você a escolher onde caçar, comparar resultados e planejar seu próximo level.</p>
+          <a class="hero-cta" href="#catalog">Explorar catálogo <span>↓</span></a>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="art-ring ring-one"></div><div class="art-ring ring-two"></div>
+          <div class="art-core"><span>HUNT</span><small>READY<br>TO GO</small></div>
+          <div class="art-star star-a">✦</div><div class="art-star star-b">✧</div>
+          <div class="art-label label-a"><i></i> dados da comunidade</div>
+          <div class="art-label label-b">XP <b>↗</b></div>
+        </div>
+      </section>
+
+      <section class="stats-row" aria-label="Resumo do catálogo">
+        <div class="stat-card"><span class="stat-icon">▤</span><div><strong id="stat-total">—</strong><small>vídeos catalogados</small></div></div>
+        <div class="stat-card"><span class="stat-icon green">◉</span><div><strong>3</strong><small>modalidades</small></div></div>
+        <div class="stat-card"><span class="stat-icon amber">↗</span><div><strong id="stat-vocations">1</strong><small>vocações no catálogo</small></div></div>
+        <div class="stat-card stat-live"><span class="status-dot"></span><div><strong>Catálogo ativo</strong><small>pronto para explorar</small></div></div>
+      </section>
+
+      <section id="apoio" class="donation-section">
+        <div class="donation-card"><div class="donation-copy"><div class="eyebrow">APOIE O PROJETO</div><h2>Contribua com Tibia Coins</h2><p>Envie TC para <strong>Lord Skanzin</strong> no mundo <strong>Jadebra</strong>. Informe a contribuição abaixo; ela só entra no ranking depois da validação manual.</p>
+          <form id="donation-form" class="donation-form"><label>Apelido no jogo<input name="nickname" maxlength="40" required placeholder="Seu nome de personagem"></label><label>Quantidade enviada<input name="amount_tc" type="number" min="1" max="10000000" required placeholder="TC"></label><label class="donation-consent"><input name="show_in_ranking" type="checkbox"> Mostrar meu apelido no ranking público</label><label class="form-trap" aria-hidden="true">Deixe este campo vazio<input name="website" tabindex="-1" autocomplete="off"></label><button type="submit">Registrar envio de TC</button><small id="donation-status" role="status"></small></form>
+        </div><div class="leaderboard"><div class="eyebrow">APOIADORES</div><h3>Ranking de Tibia Coins</h3><ol id="donation-ranking"><li>Carregando ranking…</li></ol></div></div>
+      </section>
+
+      <section id="catalog" class="catalog-section">
+        <div class="section-heading">
+          <div><div class="eyebrow">RECOMENDAÇÕES</div><h2>Escolha seu próximo destino</h2><p>Use seus filtros para encontrar uma hunt para o seu estilo.</p></div>
+          <div class="results-pill"><span id="result-count">0</span> resultados</div>
+        </div>
+
+        <div class="search-bar">
+          <span class="search-icon">⌕</span>
+          <input id="search" type="search" placeholder="Busque por hunt, criatura ou título..." aria-label="Buscar hunts">
+          <kbd>BUSCAR</kbd>
+        </div>
+
+        <div class="catalog-layout">
+          <aside id="filters" class="filters-panel">
+            <div class="filter-heading"><h3>Filtros</h3><button id="clear-filters" type="button">Limpar</button></div>
+            <label class="field-label" for="vocation">VOCACÃO</label>
+            <select id="vocation" class="select-control">
+              <option value="ALL">Todas</option><option value="MS" selected>Master Sorcerer (MS)</option>
+              <option value="EK">Elite Knight (EK)</option><option value="ED">Elder Druid (ED)</option><option value="RP">Royal Paladin (RP)</option><option value="EM">Monk (EM)</option>
+            </select>
+
+            <label class="field-label level-label" for="player-level">SEU LEVEL <span class="level-tip">ⓘ</span></label>
+            <div class="level-input-wrap"><input id="player-level" type="number" min="1" max="5000" value="900"><span>LVL</span></div>
+            <p class="field-hint">A dificuldade é estimada comparando seu level ao do vídeo.</p>
+
+            <div class="field-label">MODALIDADE</div>
+            <div class="choice-list" id="mode-choices">
+              <label><input type="radio" name="mode" value="ALL" checked><span>Todas</span></label>
+              <label><input type="radio" name="mode" value="Solo"><span>Solo</span></label>
+              <label><input type="radio" name="mode" value="Duo"><span>Duo</span></label>
+              <label><input type="radio" name="mode" value="Trio"><span>Trio</span></label>
+              <label><input type="radio" name="mode" value="Team Hunt (PT)"><span>Team Hunt <small>4–5 jogadores</small></span></label>
+            </div>
+
+            <div class="field-label difficulty-label">DIFICULDADE ESTIMADA</div>
+            <div class="difficulty-options">
+              <label><input type="radio" name="difficulty" value="ALL" checked><span>Todas</span></label>
+              <label><input type="radio" name="difficulty" value="easy"><span><i class="diff-dot easy"></i>Fácil</span></label>
+              <label><input type="radio" name="difficulty" value="moderate"><span><i class="diff-dot moderate"></i>Moderada</span></label>
+              <label><input type="radio" name="difficulty" value="advanced"><span><i class="diff-dot advanced"></i>Avançada</span></label>
+            </div>
+            <div class="difficulty-note">Estimativa baseada no level do vídeo. Equipamento e experiência também influenciam.</div>
+          </aside>
+
+          <div class="results-area">
+            <div class="results-toolbar">
+              <div class="active-filter-copy"><span class="filter-spark">✦</span><span id="filter-summary">Mostrando hunts para Master Sorcerer</span><small class="sponsor-priority-note">Patrocinados aparecem primeiro entre os resultados compatíveis</small></div>
+              <label class="sort-control">PRIORIZAR
+                <select id="sort-by"><option value="xp">Experiência (XP/h)</option><option value="profit">Profit/h</option><option value="level">Level do vídeo</option></select>
+              </label>
+            </div>
+            <div id="cards" class="cards-grid" aria-live="polite"></div>
+            <div id="empty-state" class="empty-state" hidden><div>⌕</div><h3>Nenhuma hunt encontrada</h3><p>Tente mudar os filtros ou buscar outro termo.</p><button id="empty-clear" type="button">Limpar filtros</button></div>
+            <button id="load-more" class="load-more" type="button" hidden>Carregar mais hunts <span>↓</span></button>
+          </div>
+        </div>
+      </section>
+      <footer class="page-footer"><span>SKAN COACH AI</span><span>Recomendações baseadas em vídeos da playlist · Use como referência e valide sua hunt no jogo.</span></footer>
+    </main>
+  </div>
+  <dialog id="feedback-list-dialog" class="feedback-dialog" aria-labelledby="feedback-list-heading">
+    <div class="feedback-dialog-head"><div><div class="eyebrow">RELATOS DA COMUNIDADE</div><h2 id="feedback-list-heading">Feedbacks desta hunt</h2><p id="feedback-list-video-title"></p></div><button id="feedback-list-close" class="dialog-close" type="button" aria-label="Fechar">×</button></div>
+    <div id="feedback-list" class="feedback-list"></div>
+    <div class="feedback-list-footer"><small id="feedback-list-status" role="status"></small><button id="write-feedback" type="button">Testei esta hunt</button></div>
+  </dialog>
+  <dialog id="feedback-form-dialog" class="feedback-dialog feedback-form-dialog" aria-labelledby="feedback-form-heading">
+    <div class="feedback-dialog-head"><div><div class="eyebrow">RELATO DA COMUNIDADE</div><h2 id="feedback-form-heading">Conte como foi testar</h2><p id="feedback-form-video-title"></p></div><button id="feedback-form-close" class="dialog-close" type="button" aria-label="Fechar">×</button></div>
+    <form id="feedback-form" class="feedback-form">
+      <input id="feedback-video-id" name="video_id" type="hidden">
+      <h3>Seu resultado no jogo</h3>
+      <div class="feedback-fields">
+        <label>Apelido (opcional)<input name="nickname" maxlength="40" placeholder="Como quer aparecer"></label>
+        <label>Vocação<select name="vocation" required><option value="">Selecione</option><option>MS</option><option>EK</option><option>ED</option><option>EM</option><option>RP</option></select></label>
+        <label>Seu level<input name="player_level" type="number" min="1" max="5000" required placeholder="Ex.: 900"></label>
+        <label>Dificuldade de 1 a 5<select name="difficulty"><option value="">Não informar</option><option value="1">1 · Muito fácil</option><option value="2">2 · Fácil</option><option value="3">3 · Média</option><option value="4">4 · Difícil</option><option value="5">5 · Muito difícil</option></select></label>
+        <label>XP Raw alcançada (opcional)<input name="xp_raw" maxlength="40" placeholder="Ex.: 8kk/h"></label>
+        <label>Profit alcançado (opcional)<input name="profit" maxlength="40" placeholder="Ex.: 1.2kk/h"></label>
+      </div>
+      <label class="feedback-check"><input name="tested" type="checkbox" checked> Testei esta hunt no jogo</label>
+      <label class="feedback-check outdated-check"><input name="outdated" type="checkbox"> O vídeo parece desatualizado (rota, balanceamento, spawn ou equipamento)</label>
+      <label class="feedback-result-label">Como foi? Conte o resultado<textarea name="result" required minlength="8" maxlength="2000" rows="4" placeholder="Conte sua experiência, rota usada, equipamento ou o que mudou desde o vídeo…"></textarea></label>
+      <label class="form-trap" aria-hidden="true">Deixe este campo vazio<input name="website" tabindex="-1" autocomplete="off"></label>
+      <div class="feedback-submit-row"><small id="feedback-form-status" role="status">Seu relato ficará associado a este vídeo.</small><button type="submit">Publicar feedback</button></div>
+    </form>
+  </dialog>
+</body>
+</html>
+
