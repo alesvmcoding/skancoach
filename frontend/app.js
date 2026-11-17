@@ -214,14 +214,16 @@ function difficultyFor(row, playerLevel, vocation) {
   const reference = levelFor(row, vocation);
   if (!reference || !playerLevel) return null;
   if (playerLevel >= reference * 1.1) return "easy";
-  if (playerLevel <= reference * 0.9) return "advanced";
-  return "moderate";
+  if (playerLevel >= reference * 0.9) return "moderate";
+  if (playerLevel < 300 && reference > playerLevel * 1.25) return "out_of_range";
+  return "advanced";
 }
 
 const DIFFICULTY = {
   easy: { label: "Fácil", dot: "easy" },
   moderate: { label: "Moderada", dot: "moderate" },
   advanced: { label: "Avançada", dot: "advanced" },
+  out_of_range: { label: "Fora da faixa", dot: "advanced" },
 };
 
 function formatLevels(row) {
