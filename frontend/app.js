@@ -157,7 +157,7 @@ function vocationFromText(text) {
 function vocationFromTitle(text) {
   const value = String(text || "").replace(/\bEM\s+20\d{2}\b/gi, " ");
   const namedMatches = [...value.matchAll(/\b(MS|EK|ED|RP|Monk|Master\s+Sorcerer|Elite\s+Knight|Elder\s+Druid|Royal\s+Paladin|Mage|Sorcerer|Knight|Druid|Paladin)\b/gi)];
-  const emMatches = [...value.matchAll(/\bEM\b/g)];
+  const emMatches = [...value.matchAll(/\b(EM)\b/g)];
   const firstMatch = [...namedMatches, ...emMatches].sort((a, b) => a.index - b.index)[0];
   if (!firstMatch) return "";
   const alias = firstMatch[1].toUpperCase();
