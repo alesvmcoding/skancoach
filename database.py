@@ -38,7 +38,10 @@ class HybridRow(dict):
 
 
 def hybrid_row_factory(cursor):
-    columns = [column.name for column in cursor.description]
+    # PostgreSQL statements such as CREATE TABLE have no result columns.
+    # Psycopg still asks for a row factory while executing them, so treat a
+    # missing description as an empty column set.
+    columns = [column.name for column in (cursor.description or ())]
     return lambda values: HybridRow(values, columns)
 
 
