@@ -6,6 +6,7 @@ import argparse
 import csv
 import json
 import os
+import re
 import sqlite3
 import sys
 from contextlib import closing
@@ -140,6 +141,9 @@ def video_id_from(value: str) -> str:
 
 def fetch_single_video(api_key: str, value: str, vocation: str = "MS") -> list[dict]:
     video_id = video_id_from(value)
+    # The ID ends up in stored URLs rendered as HTML, so accept only real YouTube IDs.
+    if not re.fullmatch(r"[A-Za-z0-9_-]{11}", video_id):
+        raise ValueError("Link de vídeo inválido: o ID do YouTube deve ter 11 caracteres (letras, números, - ou _).")
     item = next(iter(request_video(api_key, video_id).get("items", [])), None)
     if not item:
         raise ValueError("Vídeo não encontrado ou não está público.")

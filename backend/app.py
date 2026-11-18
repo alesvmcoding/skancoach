@@ -257,10 +257,11 @@ class Handler(SimpleHTTPRequestHandler):
 
     @staticmethod
     def is_private_file(path: str) -> bool:
-        parts = Path(unquote(path)).parts
+        # Check the decoded path: translate_path decodes before opening, so /README.%6dd must be blocked too.
+        decoded = Path(unquote(path))
         return (
-            Path(path).suffix.lower() in {".py", ".pyc", ".md", ".db", ".csv", ".zip"}
-            or any(part.startswith(".") or part == "__pycache__" for part in parts)
+            decoded.suffix.lower() in {".py", ".pyc", ".md", ".db", ".csv", ".zip"}
+            or any(part.startswith(".") or part == "__pycache__" for part in decoded.parts)
         )
 
     def do_POST(self):
@@ -413,9 +414,10 @@ class Handler(SimpleHTTPRequestHandler):
             return False
         limit, window = PUBLIC_FORM_LIMITS[form_name]
         address = self.client_address[0] if self.client_address else "unknown"
-        # Only trust proxy headers when explicitly enabled and the hosting proxy overwrites them.
+        # Only trust proxy headers when explicitly enabled. Use the last entry: the hosting proxy
+        # appends the real client IP there, while earlier entries can be sent by the client.
         if os.environ.get("SKAN_TRUST_PROXY_HEADERS") == "1":
-            forwarded = self.headers.get("X-Forwarded-For", "").split(",", 1)[0].strip()
+            forwarded = self.headers.get("X-Forwarded-For", "").rsplit(",", 1)[-1].strip()
             if forwarded:
                 address = forwarded
         now = int(time.time())
@@ -631,7 +633,9 @@ class Handler(SimpleHTTPRequestHandler):
                     GROUP BY v.video_id ORDER BY position""").fetchall()
             body = json.dumps([dict(row) for row in rows], ensure_ascii=False).encode("utf-8")
         except (OSError, *DATABASE_ERRORS) as exc:
-            body = json.dumps({"error": str(exc)}).encode("utf-8")
+            # Database errors can include host/user details; keep them in the server log only.
+            print(f"Erro ao carregar o catálogo: {exc}")
+            body = json.dumps({"error": "Não foi possível carregar o catálogo."}, ensure_ascii=False).encode("utf-8")
             self.send_response(500)
         else:
             self.send_response(200)

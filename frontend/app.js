@@ -268,14 +268,14 @@ function cardMarkup(row) {
     : `<span class="difficulty-badge">Informe seu level</span>`;
   const playerLabel = Number(row.players_count) === 1 ? "jogador" : "jogadores";
   return `<article class="hunt-card">
-    <a class="thumb-wrap" href="${row.video_url}" target="_blank" rel="noopener noreferrer" aria-label="Assistir: ${escapeHtml(row.title)}">
+    <a class="thumb-wrap" href="${escapeHtml(row.video_url)}" target="_blank" rel="noopener noreferrer" aria-label="Assistir: ${escapeHtml(row.title)}">
       <img loading="lazy" src="https://i.ytimg.com/vi/${encodeURIComponent(row.video_id)}/hqdefault.jpg" alt="Miniatura do vídeo" />
       <span class="thumb-vocation">${row.primaryVocation || row.levels[0]?.vocation || row.playlistVocations[0] || "HUNT"}</span>
       <span class="thumb-position">#${row.position}</span><span class="play-button">▶</span>
     </a>
     <div class="hunt-card-body">
       <div class="card-badges"><span class="mode-badge ${row.hunt_type === "Solo" ? "solo" : row.hunt_type === "Trio" ? "trio" : ""}">✦ ${escapeHtml(mode)}${row.players_count ? ` · ${row.players_count} ${playerLabel}` : ""}</span><span class="card-badge-right">${row.sponsored ? '<i class="sponsored-badge">Patrocinado</i>' : ""}${diffMarkup}</span></div>
-      <a class="card-title-link" href="${row.video_url}" target="_blank" rel="noopener noreferrer"><h3 title="Título original do YouTube">${escapeHtml(row.title)}</h3></a>
+      <a class="card-title-link" href="${escapeHtml(row.video_url)}" target="_blank" rel="noopener noreferrer"><h3 title="Título original do YouTube">${escapeHtml(row.title)}</h3></a>
       <div class="card-level"><span class="level-symbol">◈</span>${escapeHtml(level)}</div>
       <div class="metric-row">${xpMetric}${profitMetric}</div>
       <div class="feedback-actions"><button class="feedback-action feedback-submit-open" type="button" data-feedback-action="submit" data-video-id="${escapeHtml(row.video_id)}" data-video-title="${escapeHtml(row.title)}">Testei esta hunt</button><button class="feedback-action feedback-view-open" type="button" data-feedback-action="view" data-video-id="${escapeHtml(row.video_id)}" data-video-title="${escapeHtml(row.title)}">Ver feedback <span class="feedback-count">${feedbackCounts[row.video_id] || 0}</span></button></div>
